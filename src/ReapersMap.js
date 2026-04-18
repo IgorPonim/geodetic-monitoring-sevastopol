@@ -4,7 +4,7 @@ import L from 'leaflet';
 import { reapersData } from './reapersData';
 import './ReapersMap.css';
 import { useState, useEffect } from 'react';
-
+import { benchmarks } from './data/benchmarks';
 // Фикс иконок leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -210,7 +210,18 @@ export default function ReapersMap() {
               style={{ height: '100%', width: '100%' }}
               className="leaflet-map"
             >
-              
+              {benchmarks.map(point => (
+        <Marker key={point.id} position={[point.lat, point.lng]}>
+          <Popup>
+            <b>{point.name}</b><br />
+            Тип: {point.type}<br />
+            Высота: {point.height} м<br />
+            {point.description}
+          </Popup>
+        </Marker>
+      ))} <MapContainer/>
+
+
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -283,7 +294,7 @@ export default function ReapersMap() {
         <div className="add-point-overlay">
           <div className="add-point-form">
             <h3>➕ Новый геодезический пункт</h3>
-            <p>Координаты: {tempPoint.lat.toFixed(6)}, {tempPoint.lng.toFixed(6)}</p>
+            <p>Координаты: {tempPoint.lat.toFixed(6)}, {tempPoint.lng.toFixed(6)} в WGS-84 (примерные)</p>
 
             <input
               type="text"
@@ -295,7 +306,7 @@ export default function ReapersMap() {
               <option value="unknown">Неизвестно</option>
               <option value="wall">Стенной</option>
               <option value="ground">Грунтовый</option>
-              <option value="fundamental">Фундаментальный</option>
+              <option value="fundamental">Пирамида</option>
             </select>
 
             <textarea
