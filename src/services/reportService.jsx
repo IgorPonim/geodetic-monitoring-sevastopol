@@ -1,76 +1,71 @@
-// reportService.js
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPgyMG9IwgE1PXn3JP25pF2oenfi_aRTVNAvRroavbetwIQo5GMX1F3akyGMhMR7mL/exec';
+// reportService.jsx
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2HN8-sf43e-xtmusQ-vfiQ0Oggf5sh5OoT02G6cqbols3Zpb-fxcre5FvucBMo8T9/exec';
 
+// Публичная CSV-ссылка на вашу таблицу (замените на свою)
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2425v6IB81nrSqm8M3tO0uYd6dnoB3vLeLvnLYM3HYgHLGJ_y0qczd4RofClIJjfoTNMq_Vz-xlOX/pub?output=csv';
+
+// Отправка отчёта (POST) — оставляем как есть
 export const sendReport = async (reportData) => {
   try {
     console.log('📤 [sendReport] Отправка данных:', JSON.stringify(reportData, null, 2));
-    console.log('📤 [sendReport] URL:', SCRIPT_URL);
     
-    const response = await fetch(SCRIPT_URL, {
+    await fetch(SCRIPT_URL, {
       method: 'POST',
-        mode: 'no-cors', // ← добавляем эту строку
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(reportData)
     });
-
-    // Логируем статус ответа
-    console.log('📥 [sendReport] Статус ответа:', response.status);
-    console.log('📥 [sendReport] Статус текст:', response.statusText);
-    console.log('📥 [sendReport] Заголовки:', [...response.headers.entries()]);
     
-    // Пытаемся прочитать ответ в любом случае
-    let responseText = '';
-    try {
-      responseText = await response.text();
-      console.log('📥 [sendReport] Тело ответа (текст):', responseText);
-    } catch (textError) {
-      console.error('❌ [sendReport] Не удалось прочитать тело ответа:', textError);
-      responseText = 'Не удалось прочитать ответ';
-    }
-    
-    // Пытаемся распарсить JSON, если получится
-    let responseData = null;
-    try {
-      responseData = JSON.parse(responseText);
-      console.log('📥 [sendReport] Тело ответа (JSON):', responseData);
-    } catch (jsonError) {
-      console.log('📥 [sendReport] Ответ не в формате JSON (или пустой)');
-    }
-    
-    // Проверяем успешность запроса
-    if (response.ok) {
-      console.log('✅ [sendReport] Запрос успешен!');
-      return { success: true, data: responseData, status: response.status };
-    } else {
-      console.error('❌ [sendReport] Сервер вернул ошибку:', response.status);
-      return { 
-        success: false, 
-        error: `HTTP ${response.status}: ${response.statusText}`,
-        responseText: responseText,
-        status: response.status
-      };
-    }
+    console.log('✅ [sendReport] Запрос отправлен');
+    return { success: true };
     
   } catch (error) {
-    console.error('❌ [sendReport] Ошибка при выполнении fetch:', error);
-    console.error('❌ [sendReport] Тип ошибки:', error.name);
-    console.error('❌ [sendReport] Сообщение:', error.message);
+    console.error('❌ [sendReport] Ошибка:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// reportService.jsx
+export const fetchReports = async () => {
+  try {
+    console.log('📥 [fetchReports] Загрузка данных из CSV...');
     
-    // Дополнительная диагностика для сетевых ошибок
-    if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-      console.error('🔍 [sendReport] Это可能是 CORS ошибка или проблема с сетью');
-      console.error('🔍 [sendReport] Проверьте:');
-      console.error('    1. Правильный ли URL?');
-      console.error('    2. Есть ли интернет?');
-      console.error('    3. Не блокирует ли браузер запрос?');
+    const response = await fetch(CSV_URL);
+    const csvText = await response.text();
+    
+    // Парсим CSV
+    const lines = csvText.split('\n');
+    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+    
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      
+      let values;
+      if (lines[i].includes('"')) {
+        values = lines[i].match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)
+          .map(v => v.replace(/^"|"$/g, '').trim());
+      } else {
+        values = lines[i].split(',').map(v => v.trim());
+      }
+      
+      const obj = {};
+      headers.forEach((header, idx) => {
+        obj[header] = values[idx] || '';
+      });
+      
+      // Преобразуем lat/lng из строки с запятой в число
+      if (obj.lat) obj.lat = parseFloat(obj.lat.replace(',', '.'));
+      if (obj.lng) obj.lng = parseFloat(obj.lng.replace(',', '.'));
+      
+      result.push(obj);
     }
     
-    return { 
-      success: false, 
-      error: error.message,
-      errorType: error.name
-    };
+    console.log('📥 [fetchReports] Получено записей:', result.length);
+    return { success: true, data: result };
+    
+  } catch (error) {
+    console.error('❌ [fetchReports] Ошибка:', error);
+    return { success: false, error: error.message, data: [] };
   }
 };

@@ -4,7 +4,7 @@ import L from 'leaflet';
 import { benchmarks } from './data/benchmarks';
 import './ReapersMap.css';
 import { useState, useEffect } from 'react';
-import { sendReport } from './services/reportService';
+import { sendReport, fetchReports } from './services/reportService';
 
 // Фикс иконок leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -64,21 +64,6 @@ function ReperReportForm({ reper, onReportSent }) {
   const [uploading, setUploading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
 
-  // Загрузка фото на бесплатный хостинг (ImgBB)
-  // const uploadPhoto = async (file) => {
-  //   const formData = new FormData();
-  //   formData.append('image', file);
-
-  //   const response = await fetch('https://script.google.com/macros/s/AKfycbzYfS4-3vMVpOwtJbgoK1YsvwM9Y1ohX1rURA_BFm-XlSGxZKOgCqF1e1FLFfbg7jLN/exec', {
-  //     method: 'POST',
-  //     body: formData
-  //   });
-  //   console.log('📥 Статус ответа (no-cors):', response.type, response.status);
-  //   console.log('✅ Запрос отправлен (ответ не читается из-за no-cors)');
-  //   const data = await response.json();
-  //   return data.data.url;
-  // };
-
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -101,21 +86,22 @@ const handleSubmit = async () => {
   setUploading(true);
 
   const report = {
-    reperId: reper.id,
-    reperName: reper.name,
+    id: `report_${Date.now()}`,        // уникальный ID отчёта
+    reperId: reper.id.toString(),      // ← ВАЖНО: отдельное поле с ID репера
+    name: reper.name,
     lat: reper.lat,
     lng: reper.lng,
     status: status,
     comment: comment,
-    photoUrl: null,
-    reporter: 'Аноним'
+    author: 'Аноним',
+    submittedAt: new Date().toISOString()
   };
+
+  console.log('📤 Отправка отчёта:', report);
 
   const result = await sendReport(report);
   console.log('🔵 Результат sendReport:', result);
-  
-  // При mode: 'no-cors' result.success всегда true,
-  // даже если мы не можем прочитать ответ
+
   alert('Отправлено! Спасибо за помощь. Отчёт будет проверен администратором.');
   setStatus('');
   setComment('');
@@ -182,9 +168,52 @@ export default function ReapersMap() {
   const [addingMode, setAddingMode] = useState(false);
   const [tempPoint, setTempPoint] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [pendingReports, setPendingReports] = useState({});
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Загружаем сохранённые статусы при загрузке
+  // Загружаем данные из Google Sheets при загрузке страницы
+ useEffect(() => {
+  const loadReports = async () => {
+    setLoading(true);
+    const result = await fetchReports();
+    console.log('📥 Результат fetchReports:', result);
+
+    if (result.success && result.data) {
+      setReports(result.data);
+
+      const newStatuses = {};
+      result.data.forEach(report => {
+        console.log('🔍 Обработка отчёта:', report);
+        
+        // Берём reperId или id
+        let reperId = report.reperId || report.id;
+        
+        // Проверяем, что это НЕ новый пункт (не начинается с new_)
+        if (reperId && !reperId.toString().startsWith('new_') && !reperId.toString().startsWith('report_')) {
+          const reportStatus = report.status;
+          
+          // Проверяем, что статус валидный
+          if (reportStatus === 'alive' || reportStatus === 'destroyed') {
+            // Если reperId — число, используем его как число
+            const numericId = parseInt(reperId);
+            if (!isNaN(numericId)) {
+              newStatuses[numericId] = reportStatus;
+              console.log(`✅ Репер ${numericId} (${report.name}) → ${reportStatus}`);
+            }
+          }
+        }
+      });
+      
+      console.log('📊 Итоговые статусы:', newStatuses);
+      setReaperStatuses(newStatuses);
+    }
+    setLoading(false);
+  };
+
+  loadReports();
+}, []);
+
+  // Загружаем сохранённые статусы из localStorage (если есть)
   useEffect(() => {
     const saved = localStorage.getItem('reaperStatuses');
     if (saved) {
@@ -207,64 +236,75 @@ export default function ReapersMap() {
   };
 
   // Функция отправки нового пункта от пользователя
-const submitNewPoint = async () => {
-  console.log('🔵 submitNewPoint ВЫЗВАНА');
-  
-  const name = document.getElementById('pointName')?.value;
-  if (!name) {
-    alert('Введите название или номер пункта');
-    return;
-  }
-  
-  const newPoint = {
-    id: `new_${Date.now()}`,
-    name: name,
-    lat: tempPoint.lat,
-    lng: tempPoint.lng,
-    type: document.getElementById('pointType')?.value || 'unknown',
-    description: document.getElementById('pointComment')?.value || '',
-    author: document.getElementById('pointAuthor')?.value || 'Аноним',
-    photo: null,
-    status: 'pending',
-    submittedAt: new Date().toISOString()
+  const submitNewPoint = async () => {
+    console.log('🔵 submitNewPoint ВЫЗВАНА');
+
+    const name = document.getElementById('pointName')?.value;
+    if (!name) {
+      alert('Введите название или номер пункта');
+      return;
+    }
+
+    const newPoint = {
+      id: `new_${Date.now()}`,
+      name: name,
+      lat: tempPoint.lat,
+      lng: tempPoint.lng,
+      type: document.getElementById('pointType')?.value || 'unknown',
+      description: document.getElementById('pointComment')?.value || '',
+      author: document.getElementById('pointAuthor')?.value || 'Аноним',
+      photo: null,
+      status: 'pending',
+      submittedAt: new Date().toISOString()
+    };
+
+    console.log('📤 Отправляем в Google Sheets:', JSON.stringify(newPoint, null, 2));
+
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2tyCibJURnL0TsqwkJYge9YupO94NZz8ANrOlcbzcuG0MALLNoj4Az-JbAWLDa2pg/exec';
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPoint)
+      });
+
+      console.log('✅ Запрос отправлен (режим no-cors)');
+      alert('Спасибо! Пункт отправлен на проверку администратору.');
+      setTempPoint(null);
+      setPhotoPreview(null);
+      setAddingMode(false);
+
+    } catch (error) {
+      console.error('❌ Ошибка сети:', error);
+      alert('Не удалось отправить данные. Проверьте подключение к интернету.');
+    }
   };
-  
-  console.log('📤 Отправляем в Google Sheets:', JSON.stringify(newPoint, null, 2));
-  
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2tyCibJURnL0TsqwkJYge9YupO94NZz8ANrOlcbzcuG0MALLNoj4Az-JbAWLDa2pg/exec';
-  
-  try {
-    // Отправка в режиме no-cors
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newPoint)
-    });
-    
-    // При mode: 'no-cors' мы не можем прочитать ответ,
-    // но если не было ошибки сети - считаем отправку успешной
-    console.log('✅ Запрос отправлен (режим no-cors)');
-    alert('Спасибо! Пункт отправлен на проверку администратору.');
-    setTempPoint(null);
-    setPhotoPreview(null);
-    setAddingMode(false);
-    
-  } catch (error) {
-    console.error('❌ Ошибка сети:', error);
-    alert('Не удалось отправить данные. Проверьте подключение к интернету.');
-  }
-};
 
   // Получение текущего отображаемого статуса репера
   const getCurrentStatus = (reaperId) => {
     return reaperStatuses[reaperId] || null;
   };
 
+
+
+
+
+  
+
   return (
     <div className="app-container">
+      {/* Индикатор загрузки */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+          <p>Загрузка данных с сервера...</p>
+        </div>
+      )}
+
       <header className="header">
         <div className="header-content">
           <h1 className="title">
@@ -334,7 +374,6 @@ const submitNewPoint = async () => {
                       <ReperReportForm
                         reper={point}
                         onReportSent={() => {
-                          // После отправки отчёта можно обновить статус локально
                           console.log('Отчёт отправлен для', point.name);
                         }}
                       />
@@ -342,6 +381,44 @@ const submitNewPoint = async () => {
                   </Marker>
                 );
               })}
+
+{/* Пользовательские пункты из Google Sheets (где id начинается с new_) */}
+{reports
+  .filter(r => r.id && r.id.toString().startsWith('new_'))
+  .map(point => {
+    // Координаты уже преобразованы в fetchReports
+    const lat = point.lat;
+    const lng = point.lng;
+    
+    if (isNaN(lat) || isNaN(lng)) return null;
+    
+    return (
+      <Marker
+        key={point.id}
+        position={[lat, lng]}
+      >
+        <Popup>
+          <div className="popup-content">
+            <h3>🆕 {point.name}</h3>
+            <p><strong>Тип:</strong> {point.type}</p>
+            <p><strong>Описание:</strong> {point.description}</p>
+            <p><strong>Автор:</strong> {point.author}</p>
+            <p><strong>Статус:</strong> {point.status}</p>
+            <p><strong>Координаты:</strong> {lat.toFixed(6)}, {lng.toFixed(6)}</p>
+            <hr />
+            <p style={{ fontSize: '12px', color: '#666' }}>
+              📅 {new Date(point.submittedAt).toLocaleString()}
+            </p>
+          </div>
+        </Popup>
+      </Marker>
+    );
+  })}
+
+
+
+
+
             </MapContainer>
           </div>
         </div>
