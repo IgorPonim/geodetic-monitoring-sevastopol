@@ -1,0 +1,20 @@
+
+
+POST https://script.google.com/macros/s/AKfycbzPgyMG9IwgE1PXn3JP25pF2oenfi_aRTVNAvRroavbetwIQo5GMX1F3akyGMhMR7mL/exec
+Content-Type: application/json
+
+{
+
+ "id": "new_1776494936993",
+  "name": "321",
+  "lat": 44.57330243929381,
+  "lng": 33.5396319888972,
+  "type": "ground",
+  "description": "qweqweqw",
+  "author": "qweqweqweq",
+  "photo": null,
+  "status": "pending",
+  "submittedAt": "2026-04-18T06:48:56.993Z"
+
+
+}
