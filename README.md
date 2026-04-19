@@ -1,70 +1,56 @@
-# Getting Started with Create React App
+# 🗺️ Геодезический мониторинг Севастополя
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Интерактивная карта геодезических пунктов Севастополя с возможностью краудсорсингового мониторинга их состояния. Проект создан для помощи геодезистам и кадастровым инженерам в условиях нестабильной работы GNSS-оборудования (глушение сигнала).
 
-## Available Scripts
+## 📌 О проекте
 
-In the project directory, you can run:
+- **518+ геодезических пунктов** на карте Севастополя
+- **Краудсорсинговый сбор данных** о состоянии пунктов (жив/уничтожен)
+- **Добавление новых пунктов** пользователями
+- **Модерация отчётов** администратором через Google Sheets
+- **Цветовая индикация** статуса пунктов (зелёный/красный/серый)
 
-### `npm start`
+## 🛠️ Технологии
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **React** — интерфейс и логика
+- **Leaflet** — отображение карты
+- **Google Sheets + Apps Script** — бэкенд для сбора данных
+- **GitHub Pages** — хостинг
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 Функционал
 
-### `npm test`
+| Функция | Описание |
+|---------|----------|
+| Просмотр пунктов | 518+ геодезических пунктов на карте |
+| Отправка отчёта | Подтвердить, что пункт жив или уничтожен |
+| Добавление пункта | Сообщить о новом или неизвестном пункте |
+| Верификация | Отчёты появляются на карте только после проверки администратором |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## ⚠️ Важная информация
 
-### `npm run build`
+- Координаты указаны в системе WGS 84 с **погрешностью 5-10 метров**
+- Данные предназначены только для **приблизительной ориентации**
+- Для точных координат обращайтесь в **Росреестр**
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📱 Адаптивность
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Проект корректно отображается на:
+- Desktop (ПК)
+- Планшетах
+- Мобильных телефонах
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🔗 Ссылка на проект
 
-### `npm run eject`
+👉 [https://ТВОЙ_ЛОГИН.github.io/geodetic-monitoring-sevastopol](https://ТВОЙ_ЛОГИН.github.io/geodetic-monitoring-sevastopol)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 👨‍💻 Автор
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Кадастровый инженер, геодезист
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 📄 Лицензия
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+MIT
 
-## Learn More
+## 🙏 Благодарность
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Спасибо всем геодезистам Севастополя за помощь в верификации пунктов!
