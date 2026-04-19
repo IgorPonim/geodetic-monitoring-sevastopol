@@ -41,7 +41,7 @@
 
 ## 🔗 Ссылка на проект
 
-👉 [https://ТВОЙ_ЛОГИН.github.io/geodetic-monitoring-sevastopol](https://ТВОЙ_ЛОГИН.github.io/geodetic-monitoring-sevastopol)
+👉 [https://igorponim.github.io/geodetic-monitoring-sevastopol](https://igorponim.github.io/geodetic-monitoring-sevastopol)
 
 ## 👨‍💻 Автор
 

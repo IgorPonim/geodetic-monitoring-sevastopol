@@ -1,7 +1,7 @@
-// reportService.jsx
+
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLTpBZb0jR9lH9nPwUuZjFvYGASCBd6THHZNqgkSZKXPUfW9l_lcPdaM56KjViTvp5/exec';
 
-// Публичная CSV-ссылка на вашу таблицу (замените на свою)
+
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2425v6IB81nrSqm8M3tO0uYd6dnoB3vLeLvnLYM3HYgHLGJ_y0qczd4RofClIJjfoTNMq_Vz-xlOX/pub?output=csv';
 
 // Отправка отчёта (POST) — оставляем как есть
