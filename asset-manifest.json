@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/geodetic-monitoring-sevastopol/static/css/main.e9d67bb5.css",
+    "main.js": "/geodetic-monitoring-sevastopol/static/js/main.2588d86f.js",
+    "static/js/453.a507ba71.chunk.js": "/geodetic-monitoring-sevastopol/static/js/453.a507ba71.chunk.js",
+    "index.html": "/geodetic-monitoring-sevastopol/index.html",
+    "main.e9d67bb5.css.map": "/geodetic-monitoring-sevastopol/static/css/main.e9d67bb5.css.map",
+    "main.2588d86f.js.map": "/geodetic-monitoring-sevastopol/static/js/main.2588d86f.js.map",
+    "453.a507ba71.chunk.js.map": "/geodetic-monitoring-sevastopol/static/js/453.a507ba71.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e9d67bb5.css",
+    "static/js/main.2588d86f.js"
+  ]
+}
