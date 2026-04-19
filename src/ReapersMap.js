@@ -139,8 +139,8 @@ function ReperReportForm({ reper, onReportSent }) {
             onChange={(e) => setComment(e.target.value)}
             rows="3"
           />
-
-          <input
+          {/* ПОКА БЕЗ ФОТОГРАФИЙ */}
+          {/* <input
             type="file"
             accept="image/*"
             onChange={handlePhotoChange}
@@ -152,7 +152,7 @@ function ReperReportForm({ reper, onReportSent }) {
               alt="Предпросмотр"
               style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '8px' }}
             />
-          )}
+          )} */}
 
           <button onClick={handleSubmit} disabled={uploading}>
             {uploading ? 'Отправка...' : '📤 Отправить отчёт'}
@@ -315,6 +315,24 @@ export default function ReapersMap() {
             альтернативную систему контроля состояния геодезических пунктов.
             Ваша помощь — основа точных измерений в сложных условиях.
           </p>
+          <p className="disclaimer">
+            ⚠️ <strong>Важная информация:</strong> Отображаемые на карте пункты не содержат официальных названий.
+            Координаты указаны в системе WGS 84 с ограниченной точностью (погрешность до 5-10 метров)
+            и предназначены только для приблизительной ориентации на местности.
+            Для точных геодезических работ используйте официальные каталоги координат.
+          </p>
+          <p className="legal-note">
+            🛡️ <strong>Официальная информация:</strong> Данное приложение предназначено только для
+            проверки факта существования геодезического пункта на местности.
+            Для получения точных координат, высот, паспортных данных и официального статуса пункта
+            обращайтесь в <strong>Росреестр</strong> или <strong>Фонд пространственных данных</strong>.
+            Приложение не является официальным источником геодезических сведений.
+          </p>
+          <p className="add-instruction">
+            📌 <strong>Добавление новых пунктов:</strong> При добавлении нового пункта указывайте его тип:
+            <strong>«пирамида»</strong>, <strong>«репер стенной»</strong>, <strong>«репер грунтовый»</strong> или <strong>«пункт ПП»</strong>.
+            Не используйте официальную номенклатуру — достаточно простого описания.
+          </p>
         </div>
       </header>
 
@@ -459,8 +477,8 @@ export default function ReapersMap() {
               id="pointComment"
               rows="3"
             />
-
-            <input
+            {/* ПОКА БЕЗ ФОТОГРАФИЙ */}
+            {/* <input
               type="file"
               accept="image/*"
               id="pointPhoto"
@@ -472,7 +490,7 @@ export default function ReapersMap() {
                 alt="Предпросмотр"
                 style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '8px' }}
               />
-            )}
+            )} */}
 
             <input
               type="text"
@@ -499,7 +517,7 @@ export default function ReapersMap() {
               <li>🔍 <strong>Приближайте/отдаляйте</strong> карту с помощью колесика мыши или жестов на телефоне</li>
               <li>📍 <strong>Кликайте на маркер</strong> — откроется информация о геодезическом пункте</li>
               <li>✅ <strong>Подтвердите статус</strong> пункта (жив/уничтожен) и добавьте комментарий</li>
-              <li>📸 <strong>Приложите фото</strong> — это поможет верификации</li>
+              <li>📸 <strong>Приложите фото</strong> — это поможет верификации (пока нереализовал)</li>
               <li>➕ <strong>Нажмите кнопку "Добавить пункт"</strong> и кликните на карту, чтобы сообщить о новом пункте</li>
             </ul>
           </div>
@@ -517,7 +535,11 @@ export default function ReapersMap() {
             </div>
           </div>
         </div>
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
+          <p>© 2026 GeoGarantSev@mail.ru. Все права защищены.</p>
+        </div>
       </footer>
+
     </div>
   );
 }
