@@ -26,11 +26,11 @@ const createCustomIcon = (color) => {
   return L.divIcon({
     html: `<div style="
       background-color: ${color};
-      width: 24px;
-      height: 24px;
+      width: 17px;
+      height: 17px;
       border-radius: 50%;
       border: 3px solid white;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 6px rgba(91, 88, 88, 0.3);
       transition: transform 0.2s;
     "></div>`,
     className: 'custom-marker',
@@ -76,40 +76,40 @@ function ReperReportForm({ reper, onReportSent }) {
     }
   };
 
-const handleSubmit = async () => {
-  console.log('🔵 handleSubmit ВЫЗВАН');
-  if (!status) {
-    alert('Выберите статус репера');
-    return;
-  }
+  const handleSubmit = async () => {
+    console.log('🔵 handleSubmit ВЫЗВАН');
+    if (!status) {
+      alert('Выберите статус репера');
+      return;
+    }
 
-  setUploading(true);
+    setUploading(true);
 
-  const report = {
-    id: `report_${Date.now()}`,        // уникальный ID отчёта
-    reperId: reper.id.toString(),      // ← ВАЖНО: отдельное поле с ID репера
-    name: reper.name,
-    lat: reper.lat,
-    lng: reper.lng,
-    status: status,
-    comment: comment,
-    author: 'Аноним',
-    submittedAt: new Date().toISOString()
+    const report = {
+      id: `report_${Date.now()}`,        // уникальный ID отчёта
+      reperId: reper.id.toString(),      // ← ВАЖНО: отдельное поле с ID репера
+      name: reper.name,
+      lat: reper.lat,
+      lng: reper.lng,
+      status: status,
+      comment: comment,
+      author: 'Аноним',
+      submittedAt: new Date().toISOString()
+    };
+
+    console.log('📤 Отправка отчёта:', report);
+
+    const result = await sendReport(report);
+    console.log('🔵 Результат sendReport:', result);
+
+    alert('Отправлено! Спасибо за помощь. Отчёт будет проверен администратором.');
+    setStatus('');
+    setComment('');
+    setPhoto(null);
+    setPhotoPreview(null);
+    if (onReportSent) onReportSent();
+    setUploading(false);
   };
-
-  console.log('📤 Отправка отчёта:', report);
-
-  const result = await sendReport(report);
-  console.log('🔵 Результат sendReport:', result);
-
-  alert('Отправлено! Спасибо за помощь. Отчёт будет проверен администратором.');
-  setStatus('');
-  setComment('');
-  setPhoto(null);
-  setPhotoPreview(null);
-  if (onReportSent) onReportSent();
-  setUploading(false);
-};
 
   return (
     <div className="reper-card">
@@ -172,46 +172,45 @@ export default function ReapersMap() {
   const [loading, setLoading] = useState(true);
 
   // Загружаем данные из Google Sheets при загрузке страницы
- useEffect(() => {
-  const loadReports = async () => {
-    setLoading(true);
-    const result = await fetchReports();
-    console.log('📥 Результат fetchReports:', result);
+  useEffect(() => {
+    const loadReports = async () => {
+      setLoading(true);
+      const result = await fetchReports();
+      console.log('📥 Результат fetchReports:', result);
 
-    if (result.success && result.data) {
-      setReports(result.data);
+      if (result.success && result.data) {
+        setReports(result.data);
 
-      const newStatuses = {};
-      result.data.forEach(report => {
-        console.log('🔍 Обработка отчёта:', report);
-        
-        // Берём reperId или id
-        let reperId = report.reperId || report.id;
-        
-        // Проверяем, что это НЕ новый пункт (не начинается с new_)
-        if (reperId && !reperId.toString().startsWith('new_') && !reperId.toString().startsWith('report_')) {
-          const reportStatus = report.status;
-          
-          // Проверяем, что статус валидный
-          if (reportStatus === 'alive' || reportStatus === 'destroyed') {
-            // Если reperId — число, используем его как число
-            const numericId = parseInt(reperId);
-            if (!isNaN(numericId)) {
-              newStatuses[numericId] = reportStatus;
-              console.log(`✅ Репер ${numericId} (${report.name}) → ${reportStatus}`);
+        const newStatuses = {};
+        result.data.forEach(report => {
+          console.log('🔍 Обработка отчёта:', report);
+
+          let reperId = report.reperId || report.id;
+
+          if (reperId && !reperId.toString().startsWith('new_') && !reperId.toString().startsWith('report_')) {
+            const reportStatus = report.status;
+            const isApproved = report.approved === 'yes';  // ← КЛЮЧЕВОЕ УСЛОВИЕ
+
+            if (isApproved && (reportStatus === 'alive' || reportStatus === 'destroyed')) {
+              const numericId = parseInt(reperId);
+              if (!isNaN(numericId)) {
+                newStatuses[numericId] = reportStatus;
+                console.log(`✅ Репер ${numericId} (${report.name}) → ${reportStatus} (ОДОБРЕНО)`);
+              }
+            } else if (reportStatus === 'alive' || reportStatus === 'destroyed') {
+              console.log(`⏳ Репер ${reperId} (${report.name}) → ${reportStatus} (ожидает одобрения)`);
             }
           }
-        }
-      });
-      
-      console.log('📊 Итоговые статусы:', newStatuses);
-      setReaperStatuses(newStatuses);
-    }
-    setLoading(false);
-  };
+        });
 
-  loadReports();
-}, []);
+        console.log('📊 Итоговые статусы (только одобренные):', newStatuses);
+        setReaperStatuses(newStatuses);
+      }
+      setLoading(false);
+    };
+
+    loadReports();
+  }, []);
 
   // Загружаем сохранённые статусы из localStorage (если есть)
   useEffect(() => {
@@ -293,7 +292,7 @@ export default function ReapersMap() {
 
 
 
-  
+
 
   return (
     <div className="app-container">
@@ -382,38 +381,49 @@ export default function ReapersMap() {
                 );
               })}
 
-{/* Пользовательские пункты из Google Sheets (где id начинается с new_) */}
-{reports
-  .filter(r => r.id && r.id.toString().startsWith('new_'))
-  .map(point => {
-    // Координаты уже преобразованы в fetchReports
-    const lat = point.lat;
-    const lng = point.lng;
-    
-    if (isNaN(lat) || isNaN(lng)) return null;
-    
-    return (
-      <Marker
-        key={point.id}
-        position={[lat, lng]}
-      >
-        <Popup>
-          <div className="popup-content">
-            <h3>🆕 {point.name}</h3>
-            <p><strong>Тип:</strong> {point.type}</p>
-            <p><strong>Описание:</strong> {point.description}</p>
-            <p><strong>Автор:</strong> {point.author}</p>
-            <p><strong>Статус:</strong> {point.status}</p>
-            <p><strong>Координаты:</strong> {lat.toFixed(6)}, {lng.toFixed(6)}</p>
-            <hr />
-            <p style={{ fontSize: '12px', color: '#666' }}>
-              📅 {new Date(point.submittedAt).toLocaleString()}
-            </p>
-          </div>
-        </Popup>
-      </Marker>
-    );
-  })}
+              {/* Пользовательские пункты из Google Sheets (где id начинается с new_) */}
+              {reports
+                .filter(r => r.id && r.id.toString().startsWith('new_'))
+                .map(point => {
+                  // Координаты уже преобразованы в fetchReports
+                  const lat = point.lat;
+                  const lng = point.lng;
+
+                  if (isNaN(lat) || isNaN(lng)) return null;
+
+
+                  const userIcon = L.divIcon({
+                    html: `<div style="background-color: #696767dc; width: 15px; height: 15px; border-radius: 50%; border: 3px solid white;"></div>`,
+                    className: 'custom-marker',
+                    iconSize: [24, 24],
+                    popupAnchor: [0, -12]
+                  });
+
+
+
+                  return (
+                    <Marker
+                      key={point.id}
+                      position={[lat, lng]}
+                      icon={userIcon}
+                    >
+                      <Popup>
+                        <div className="popup-content">
+                          <h3>🆕 {point.name}</h3>
+                          <p><strong>Тип:</strong> {point.type}</p>
+                          <p><strong>Описание:</strong> {point.description}</p>
+                          <p><strong>Автор:</strong> {point.author}</p>
+                          <p><strong>Статус:</strong> {point.status}</p>
+                          <p><strong>Координаты:</strong> {lat.toFixed(6)}, {lng.toFixed(6)}</p>
+                          <hr />
+                          <p style={{ fontSize: '12px', color: '#666' }}>
+                            📅 {new Date(point.submittedAt).toLocaleString()}
+                          </p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                })}
 
 
 
@@ -441,7 +451,7 @@ export default function ReapersMap() {
               <option value="unknown">Неизвестно</option>
               <option value="wall">Стенной</option>
               <option value="ground">Грунтовый</option>
-              <option value="fundamental">Пирамида</option>
+              <option value="pyramid">Пирамида</option>
             </select>
 
             <textarea
