@@ -26,15 +26,15 @@ const createCustomIcon = (color) => {
   return L.divIcon({
     html: `<div style="
       background-color: ${color};
-      width: 17px;
-      height: 17px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       border: 3px solid white;
       box-shadow: 0 2px 6px rgba(91, 88, 88, 0.3);
       transition: transform 0.2s;
     "></div>`,
     className: 'custom-marker',
-    iconSize: [24, 24],
+    iconSize: [10, 10],
     popupAnchor: [0, -12]
   });
 };
